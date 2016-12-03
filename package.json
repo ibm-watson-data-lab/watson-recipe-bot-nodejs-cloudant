@@ -1,14 +1,24 @@
 {
   "name": "watson-recipe-bot-nodejs-cloudant",
   "version": "0.0.1",
-  "description": "",
+  "description": "Watson Recipe Bot with IBM Cloudant",
+  "main": "app.js",
   "scripts": {
     "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ibm-cds-labs/watson-recipe-bot-nodejs-cloudant.git"
+  },
+  "author": "Mark Watson <markwats@us.ibm.com>",
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/ibm-cds-labs/watson-recipe-bot-nodejs-cloudant/issues"
+  },
+  "homepage": "https://github.com/ibm-cds-labs/watson-recipe-bot-nodejs-cloudant",
   "dependencies": {
+    "cf-deployment-tracker-client": "^0.x",
     "cloudant": "^1.6.2",
     "dotenv": "^2.0.0",
     "cfenv": "1.0.x",
