@@ -24,9 +24,10 @@ class SousChef {
             .then(() => {
                 this.slackBot = new SlackBot({
                     token: this.slackToken,
-                    name: 'souschef'
+                    name: 'sous-chef'
                 });
                 this.slackBot.on('start', () => {
+                    console.log('sous-chef is connected and running!')
                 });
                 this.slackBot.on('message', (data) => {
                     if (data.type == 'message' && data.channel.startsWith('D')) {
