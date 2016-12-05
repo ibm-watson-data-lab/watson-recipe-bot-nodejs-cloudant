@@ -11,7 +11,7 @@ This project is Node.js version of the Watson Recipe Bot with some additional fe
 
 ####Prefer Python?
 
-There is a Python version of this project [here](https://github.com/ibm-cds-labs/watson-recipe-bot-nodejs-cloudant).
+There is a Python version of this project [here](https://github.com/ibm-cds-labs/watson-recipe-bot-python-cloudant).
 
 ## Getting Started
 
