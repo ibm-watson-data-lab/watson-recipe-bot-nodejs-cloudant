@@ -60,6 +60,36 @@ class CloudantRecipeStore {
                     return this.db.insert(designDoc);
                 }
             })
+            .then(() => {
+                // see if the by_day_of_week design doc exists, if not then create it
+                return this.db.find({selector: {'_id': '_design/by_day_of_week'}});
+            })
+            .then((result) => {
+                if (result && result.docs && result.docs.length > 0) {
+                    return Promise.resolve();
+                }
+                else {
+                    var designDoc = {
+                        _id: '_design/by_day_of_week',
+                        views: {
+                            ingredients: {
+                                map: 'function (doc) {\n  if (doc.type && doc.type==\'userIngredientRequest\') {\n    var weekdays = [\'Sunday\',\'Monday\',\'Tuesday\',\'Wednesday\',\'Thursday\',\'Friday\',\'Saturday\'];\n    emit(weekdays[new Date(doc.date).getDay()], 1);\n  }\n}',
+                                reduce: '_sum'
+                            },
+                            cuisines: {
+                                map: 'function (doc) {\n  if (doc.type && doc.type==\'userCuisineRequest\') {\n    var weekdays = [\'Sunday\',\'Monday\',\'Tuesday\',\'Wednesday\',\'Thursday\',\'Friday\',\'Saturday\'];\n    emit(weekdays[new Date(doc.date).getDay()], 1);\n  }\n}',
+                                reduce: '_sum'
+                            },
+                            recipes: {
+                                map: 'function (doc) {\n  if (doc.type && doc.type==\'userRecipeRequest\') {\n    var weekdays = [\'Sunday\',\'Monday\',\'Tuesday\',\'Wednesday\',\'Thursday\',\'Friday\',\'Saturday\'];\n    emit(weekdays[new Date(doc.date).getDay()], 1);\n  }\n}',
+                                reduce: '_sum'
+                            }
+                        },
+                        'language': 'javascript'
+                    };
+                    return this.db.insert(designDoc);
+                }
+            })
             .catch((err) => {
                 console.log(`Cloudant error: ${JSON.stringify(err)}`);
             });
