@@ -31,8 +31,8 @@ class CloudantRecipeStore {
                 return Promise.resolve();
             })
             .then(() => {
-                // see if the "popular" design doc exists, if not then create it
-                return this.db.find({selector: {'_id': '_design/popular'}});
+                // see if the by_popularity design doc exists, if not then create it
+                return this.db.find({selector: {'_id': '_design/by_popularity'}});
             })
             .then((result) => {
                 if (result && result.docs && result.docs.length > 0) {
@@ -40,7 +40,7 @@ class CloudantRecipeStore {
                 }
                 else {
                     var designDoc = {
-                        _id: '_design/popular',
+                        _id: '_design/by_popularity',
                         views: {
                             ingredients: {
                                 map: 'function (doc) {\n  if (doc.type && doc.type==\'userIngredientRequest\') {\n    emit(doc.ingredient_name, 1);\n  }\n}',
