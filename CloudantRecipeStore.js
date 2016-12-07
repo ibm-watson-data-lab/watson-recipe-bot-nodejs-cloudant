@@ -30,6 +30,36 @@ class CloudantRecipeStore {
                 this.db = this.cloudant.db.use(this.dbName);
                 return Promise.resolve();
             })
+            .then(() => {
+                // see if the "popular" design doc exists, if not then create it
+                return this.db.find({selector: {'_id': '_design/popular'}});
+            })
+            .then((result) => {
+                if (result && result.docs && result.docs.length > 0) {
+                    return Promise.resolve();
+                }
+                else {
+                    var designDoc = {
+                        _id: '_design/popular',
+                        views: {
+                            ingredients: {
+                                map: 'function (doc) {\n  if (doc.type && doc.type==\'userIngredientRequest\') {\n    emit(doc.ingredient_name, 1);\n  }\n}',
+                                reduce: '_sum'
+                            },
+                            cuisines: {
+                                map: 'function (doc) {\n  if (doc.type && doc.type==\'userCuisineRequest\') {\n    emit(doc.cuisine_name, 1);\n  }\n}',
+                                reduce: '_sum'
+                            },
+                            recipes: {
+                                map: 'function (doc) {\n  if (doc.type && doc.type==\'userRecipeRequest\') {\n    emit(doc.recipe_title, 1);\n  }\n}',
+                                reduce: '_sum'
+                            }
+                        },
+                        'language': 'javascript'
+                    };
+                    return this.db.insert(designDoc);
+                }
+            })
             .catch((err) => {
                 console.log(`Cloudant error: ${JSON.stringify(err)}`);
             });
@@ -78,6 +108,7 @@ class CloudantRecipeStore {
     incrementIngredientForUser(ingredientDoc, userDoc) {
         return this.db.get(userDoc._id)
             .then((latestUserDoc) => {
+                // add or update the ingredient and count in the user doc
                 if (! latestUserDoc.ingredients) {
                     latestUserDoc.ingredients = [];
                 }
@@ -99,6 +130,21 @@ class CloudantRecipeStore {
                 }
                 userIngredient.count += 1;
                 return this.db.insert(latestUserDoc);
+            })
+            .then((updatedUserDoc) => {
+                // add a new doc with the user/ingredient details
+                var userIngredientDoc = {
+                    type: 'userIngredientRequest',
+                    user_id: userDoc._id,
+                    user_name: userDoc['name'],
+                    ingredient_id: ingredientDoc._id,
+                    ingredient_name: ingredientDoc['name'],
+                    date: Date.now()
+                };
+                return this.db.insert(userIngredientDoc)
+                    .then(() => {
+                        return Promise.resolve(updatedUserDoc);
+                    });
             });
     }
 
@@ -151,6 +197,21 @@ class CloudantRecipeStore {
                 }
                 userCuisine.count += 1;
                 return this.db.insert(latestUserDoc);
+            })
+            .then((updatedUserDoc) => {
+                // add a new doc with the user/cuisine details
+                var userCuisineDoc = {
+                    type: 'userCuisineRequest',
+                    user_id: userDoc._id,
+                    user_name: userDoc['name'],
+                    cuisine_id: cuisineDoc._id,
+                    cuisine_name: cuisineDoc['name'],
+                    date: Date.now()
+                };
+                return this.db.insert(userCuisineDoc)
+                    .then(() => {
+                        return Promise.resolve(updatedUserDoc);
+                    });
             });
     }
 
@@ -221,6 +282,21 @@ class CloudantRecipeStore {
                 }
                 userRecipe.count += 1;
                 return this.db.insert(latestUserDoc);
+            })
+            .then((updatedUserDoc) => {
+                // add a new doc with the user/recipe details
+                var userRecipeDoc = {
+                    type: 'userRecipeRequest',
+                    user_id: userDoc._id,
+                    user_name: userDoc['name'],
+                    recipe_id: recipeDoc._id,
+                    recipe_title: recipeDoc['title'],
+                    date: Date.now()
+                };
+                return this.db.insert(userRecipeDoc)
+                    .then(() => {
+                        return Promise.resolve(updatedUserDoc);
+                    });
             });
     }
 
