@@ -3,10 +3,11 @@
 var ConversationV1 = require('watson-developer-cloud/conversation/v1');
 var RecipeClient = require('./RecipeClient');
 var SlackBot = require('slackbots');
+var WebSocketBot = require('./WebSocketBot');
 
 class SousChef {
 
-    constructor(recipeStore, slackToken, recipeClientApiKey, conversationUsername, conversationPassword, conversationWorkspaceId) {
+    constructor(recipeStore, slackToken, recipeClientApiKey, conversationUsername, conversationPassword, conversationWorkspaceId, httpServer) {
         this.userStateMap = {};
         this.recipeStore = recipeStore;
         this.recipeClient = new RecipeClient(recipeClientApiKey);
@@ -17,28 +18,18 @@ class SousChef {
             version_date: '2016-07-01'
         });
         this.conversationWorkspaceId = conversationWorkspaceId;
+        this.httpServer = httpServer;
     }
 
     run() {
         this.recipeStore.init()
             .then(() => {
-                this.slackBot = new SlackBot({
-                    token: this.slackToken,
-                    name: 'sous-chef'
-                });
-                this.slackBot.on('start', () => {
-                    console.log('sous-chef is connected and running!')
-                });
-                this.slackBot.on('message', (data) => {
-                    if (data.type == 'message' && data.channel.startsWith('D')) {
-                        if (!data.bot_id) {
-                            this.processSlackMessage(data);
-                        }
-                        else {
-                            // ignore messages from the bot (messages we sent)
-                        }
-                    }
-                });
+                if (this.slackBot) {
+                    this.runSlackBot();
+                }
+                else {
+                    this.runWebSocketBot();
+                }
             })
             .catch((error) => {
                 console.log(`Error: ${error}`);
@@ -46,7 +37,52 @@ class SousChef {
             });
     }
 
-    processSlackMessage(data) {
+    runSlackBot() {
+        this.slackBot = new SlackBot({
+            token: this.slackToken,
+            name: 'sous-chef'
+        });
+        this.slackBot.on('start', () => {
+            console.log('sous-chef is connected and running!')
+        });
+        this.slackBot.on('message', (data) => {
+            if (data.type == 'message' && data.channel.startsWith('D')) {
+                if (!data.bot_id) {
+                    this.processMessage(data);
+                }
+                else {
+                    // ignore messages from the bot (messages we sent)
+                }
+            }
+        });
+    }
+
+    runWebSocketBot() {
+        this.webSocketBot = new WebSocketBot();
+        this.webSocketBot.start(this.httpServer);
+        this.webSocketBot.on('start', () => {
+            console.log('sous-chef web socket is connected and running!')
+        });
+        this.webSocketBot.on('message', (client, message) => {
+            var data = {
+                client: client,
+                user: client.id,
+                text: message
+            }
+            this.processMessage(data);
+        });
+    }
+
+    sendMessageToClient(data, message) {
+        if (this.slackBot) {
+            this.slackBot.postMessage(data.channel, message, {});
+        }
+        else {
+            this.webSocketBot.sendMessageToClient(data.client, message);
+        }
+    }
+
+    processMessage(data) {
         // get or create state for the user
         var message = data.text;
         var messageSender = data.user;
@@ -87,7 +123,7 @@ class SousChef {
                 }
             })
             .then((reply) => {
-                this.slackBot.postMessage(data.channel, reply, {});
+                this.sendMessageToClient(data, reply);
             })
             .catch((error) => {
                 console.log(`Error: ${error}`);

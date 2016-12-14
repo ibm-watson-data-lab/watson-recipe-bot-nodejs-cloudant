@@ -17,6 +17,7 @@ var sousChef = new SousChef(
 	process.env.SPOONACULAR_KEY,
 	process.env.CONVERSATION_USERNAME,
 	process.env.CONVERSATION_PASSWORD,
-	process.env.CONVERSATION_WORKSPACE_ID
+	process.env.CONVERSATION_WORKSPACE_ID,
+	null
 );
 sousChef.run();

@@ -1,0 +1,56 @@
+<html>
+<head>
+  <link rel="stylesheet" href="css/master.css">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/vis/4.5.0/vis.min.css">
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script>
+      var webSocketHost = '<%=webSocketHost%>';
+      var webSocketPort = '<%=webSocketPort%>';
+  </script>
+</head>
+<body class="capped-layout">
+
+<header class="capped-layout_cap app-banner">
+  <span class="app-banner_title">Watson Recipe Bot</span>
+</header>
+
+<div id="app">
+  <div class="grid_row five-column">
+    <div class="grid_column one">
+    </div>
+    <div class="grid_column two">
+      <section class="layout_section">
+        <h2 class="type_heading type_mark">Messages</h2>
+        <form class="form" onsubmit="return false;">
+          <fieldset class="form_field">
+            <input id="message" class="input_text"  type=text name="message" v-model="message" placeholder="Enter your message...">
+          </fieldset>
+          <div>
+            <button id="sendmessage" type="submit" class="button_primary" v-on:click="submitMessage">Send</button>
+          </div>
+        </form>
+      </section>
+      <hr>
+      <section class="layout_section">
+        <div class="chat-message" v-for="msg in messages">
+          <div class="msg-title bg_light-tint">
+            <span>{{ msg.name }}</span>
+            <!--<span>{{ msg.ts | timestamp }}</span>-->
+          </div>
+          <div class="msg-body">{{ msg.msg }}</div>
+        </div>
+      </section>
+    </div>
+    <div class="grid_column one">
+    </div>
+    <div class="grid_column one">
+    </div>
+  </div>
+</div>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/vis/4.5.0/vis.min.js"></script>
+<script src="//cdn.jsdelivr.net/vue.resource/1.0.3/vue-resource.min.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

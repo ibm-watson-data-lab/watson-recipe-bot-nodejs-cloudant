@@ -19,12 +19,15 @@
   "homepage": "https://github.com/ibm-cds-labs/watson-recipe-bot-nodejs-cloudant",
   "dependencies": {
     "cf-deployment-tracker-client": "^0.x",
+    "cfenv": "1.0.x",
     "cloudant": "^1.6.2",
     "dotenv": "^2.0.0",
-    "cfenv": "1.0.x",
+    "ejs": "^2.5.5",
     "express": "4.13.x",
     "ibm-graph-client": "^0.3.6",
     "slackbots": "^0.5.3",
-    "watson-developer-cloud": "^2.8.2"
+    "uuid": "^3.0.1",
+    "watson-developer-cloud": "^2.8.2",
+    "websocket": "^1.0.23"
   }
 }

@@ -6,8 +6,10 @@ var CloudantRecipeStore = require('./CloudantRecipeStore');
 var SousChef = require('./SousChef');
 
 var app = express();
+var http = require('http').Server(app);
 
-app.use(express.static(__dirname + '/public'));
+// get the app environment from Cloud Foundry
+var appEnv = cfenv.getAppEnv();
 
 (function() {
     // load environment variables
@@ -23,17 +25,25 @@ app.use(express.static(__dirname + '/public'));
         process.env.SPOONACULAR_KEY,
         process.env.CONVERSATION_USERNAME,
         process.env.CONVERSATION_PASSWORD,
-        process.env.CONVERSATION_WORKSPACE_ID
+        process.env.CONVERSATION_WORKSPACE_ID,
+        http
     );
     sousChef.run();
 })();
 
-// get the app environment from Cloud Foundry
-var appEnv = cfenv.getAppEnv();
+app.use(express.static(__dirname + '/public'));
+
+// set view engine and map views directory
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
+
+// map requests
+app.get('/', function(req, res) {
+    res.render('index.ejs', {webSocketHost: appEnv.bind, webSocketPort: appEnv.port});
+});
 
 // start server on the specified port and binding host
-app.listen(appEnv.port, '0.0.0.0', function() {
-    // print a message when the server starts listening
+http.listen(appEnv.port, '0.0.0.0', () => {
     console.log("server starting on " + appEnv.url);
 });
 
