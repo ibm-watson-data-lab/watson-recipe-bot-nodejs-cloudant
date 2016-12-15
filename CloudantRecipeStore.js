@@ -21,8 +21,8 @@ class CloudantRecipeStore {
         console.log('Getting database...');
         return this.cloudant.db.list()
             .then((dbNames) => {
-                var exists = false;
-                for (var dbName of dbNames) {
+                let exists = false;
+                for (let dbName of dbNames) {
                     if (dbName == this.dbName) {
                         exists = true;
                     }
@@ -48,7 +48,7 @@ class CloudantRecipeStore {
                     return Promise.resolve();
                 }
                 else {
-                    var designDoc = {
+                    let designDoc = {
                         _id: '_design/by_popularity',
                         views: {
                             ingredients: {
@@ -78,19 +78,19 @@ class CloudantRecipeStore {
                     return Promise.resolve();
                 }
                 else {
-                    var designDoc = {
+                    let designDoc = {
                         _id: '_design/by_day_of_week',
                         views: {
                             ingredients: {
-                                map: 'function (doc) {\n  if (doc.type && doc.type==\'userIngredientRequest\') {\n    var weekdays = [\'Sunday\',\'Monday\',\'Tuesday\',\'Wednesday\',\'Thursday\',\'Friday\',\'Saturday\'];\n    emit(weekdays[new Date(doc.date).getDay()], 1);\n  }\n}',
+                                map: 'function (doc) {\n  if (doc.type && doc.type==\'userIngredientRequest\') {\n    let weekdays = [\'Sunday\',\'Monday\',\'Tuesday\',\'Wednesday\',\'Thursday\',\'Friday\',\'Saturday\'];\n    emit(weekdays[new Date(doc.date).getDay()], 1);\n  }\n}',
                                 reduce: '_sum'
                             },
                             cuisines: {
-                                map: 'function (doc) {\n  if (doc.type && doc.type==\'userCuisineRequest\') {\n    var weekdays = [\'Sunday\',\'Monday\',\'Tuesday\',\'Wednesday\',\'Thursday\',\'Friday\',\'Saturday\'];\n    emit(weekdays[new Date(doc.date).getDay()], 1);\n  }\n}',
+                                map: 'function (doc) {\n  if (doc.type && doc.type==\'userCuisineRequest\') {\n    let weekdays = [\'Sunday\',\'Monday\',\'Tuesday\',\'Wednesday\',\'Thursday\',\'Friday\',\'Saturday\'];\n    emit(weekdays[new Date(doc.date).getDay()], 1);\n  }\n}',
                                 reduce: '_sum'
                             },
                             recipes: {
-                                map: 'function (doc) {\n  if (doc.type && doc.type==\'userRecipeRequest\') {\n    var weekdays = [\'Sunday\',\'Monday\',\'Tuesday\',\'Wednesday\',\'Thursday\',\'Friday\',\'Saturday\'];\n    emit(weekdays[new Date(doc.date).getDay()], 1);\n  }\n}',
+                                map: 'function (doc) {\n  if (doc.type && doc.type==\'userRecipeRequest\') {\n    let weekdays = [\'Sunday\',\'Monday\',\'Tuesday\',\'Wednesday\',\'Thursday\',\'Friday\',\'Saturday\'];\n    emit(weekdays[new Date(doc.date).getDay()], 1);\n  }\n}',
                                 reduce: '_sum'
                             }
                         },
@@ -112,7 +112,7 @@ class CloudantRecipeStore {
      * @returns {Promise.<TResult>}
      */
     addUser(userId) {
-        var userDoc = {
+        let userDoc = {
             type: 'user',
             name: userId
         }
@@ -127,8 +127,8 @@ class CloudantRecipeStore {
      * @returns {string}
      */
     getUniqueIngredientsName(ingredientsStr) {
-        var ingredients = ingredientsStr.trim().toLowerCase().split(',');
-        for (var i = 0; i < ingredients.length; i++) {
+        let ingredients = ingredientsStr.trim().toLowerCase().split(',');
+        for (let i = 0; i < ingredients.length; i++) {
             ingredients[i] = ingredients[i].trim();
         }
         ingredients.sort();
@@ -152,7 +152,7 @@ class CloudantRecipeStore {
      * @returns {Promise.<TResult>}
      */
     addIngredient(ingredientsStr, matchingRecipes, userDoc) {
-        var ingredientDoc = {
+        let ingredientDoc = {
             type: 'ingredient',
             name: this.getUniqueIngredientsName(ingredientsStr),
             recipes: matchingRecipes
@@ -180,8 +180,8 @@ class CloudantRecipeStore {
                 if (! latestUserDoc.ingredients) {
                     latestUserDoc.ingredients = [];
                 }
-                var userIngredient = null;
-                for (var ingredient of latestUserDoc.ingredients) {
+                let userIngredient = null;
+                for (let ingredient of latestUserDoc.ingredients) {
                     if (ingredient.name == ingredientDoc.name) {
                         userIngredient = ingredient;
                         break;
@@ -201,7 +201,7 @@ class CloudantRecipeStore {
             })
             .then((updatedUserDoc) => {
                 // add a new doc with the user/ingredient details
-                var userIngredientDoc = {
+                let userIngredientDoc = {
                     type: 'userIngredientRequest',
                     user_id: userDoc._id,
                     user_name: userDoc['name'],
@@ -244,7 +244,7 @@ class CloudantRecipeStore {
      * @returns {Promise.<TResult>}
      */
     addCuisine(cuisine, matchingRecipes, userDoc) {
-        var cuisineDoc = {
+        let cuisineDoc = {
             type: 'cuisine',
             name: this.getUniqueCuisineName(cuisine),
             recipes: matchingRecipes
@@ -271,8 +271,8 @@ class CloudantRecipeStore {
                 if (! latestUserDoc.cuisines) {
                     latestUserDoc.cuisines = [];
                 }
-                var userCuisine = null;
-                for (var cuisine of latestUserDoc.cuisines) {
+                let userCuisine = null;
+                for (let cuisine of latestUserDoc.cuisines) {
                     if (cuisine.name == cuisineDoc.name) {
                         userCuisine = cuisine;
                         break;
@@ -292,7 +292,7 @@ class CloudantRecipeStore {
             })
             .then((updatedUserDoc) => {
                 // add a new doc with the user/cuisine details
-                var userCuisineDoc = {
+                let userCuisineDoc = {
                     type: 'userCuisineRequest',
                     user_id: userDoc._id,
                     user_name: userDoc['name'],
@@ -337,7 +337,7 @@ class CloudantRecipeStore {
         return this.db.get(userDoc._id)
             .then((latestUserDoc) => {
                 if (latestUserDoc.recipes) {
-                    var recipes = latestUserDoc.recipes;
+                    let recipes = latestUserDoc.recipes;
                     recipes.sort((recipe1, recipe2) => {
                         return recipe1.count - recipe2.count; // reverse sort
                     });
@@ -359,7 +359,7 @@ class CloudantRecipeStore {
      * @returns {Promise.<TResult>}
      */
     addRecipe(recipeId, recipeTitle, recipeDetail, ingredientCuisineDoc, userDoc) {
-        var recipeDoc = {
+        let recipeDoc = {
             type: 'recipe',
             name: this.getUniqueRecipeName(recipeId),
             title: recipeTitle.trim().replace(/'/g, '\\\''),
@@ -388,8 +388,8 @@ class CloudantRecipeStore {
                 if (! latestUserDoc.recipes) {
                     latestUserDoc.recipes = [];
                 }
-                var userRecipe = null;
-                for (var recipe of latestUserDoc.recipes) {
+                let userRecipe = null;
+                for (let recipe of latestUserDoc.recipes) {
                     if (recipe.id == recipeDoc.name) {
                         userRecipe = recipe;
                         break;
@@ -410,7 +410,7 @@ class CloudantRecipeStore {
             })
             .then((updatedUserDoc) => {
                 // add a new doc with the user/recipe details
-                var userRecipeDoc = {
+                let userRecipeDoc = {
                     type: 'userRecipeRequest',
                     user_id: userDoc._id,
                     user_name: userDoc['name'],
@@ -435,7 +435,7 @@ class CloudantRecipeStore {
      * @returns {Promise.<TResult>}
      */
     findDoc(docType, propertyName, propertyValue) {
-        var selector = {
+        let selector = {
             '_id': {'$gt': 0},
             'type': docType
         };
@@ -458,8 +458,8 @@ class CloudantRecipeStore {
      * @returns {Promise.<TResult>}
      */
     addDocIfNotExists(doc, uniquePropertyName) {
-        var docType = doc.type;
-        var propertyValue = doc[uniquePropertyName];
+        let docType = doc.type;
+        let propertyValue = doc[uniquePropertyName];
         return this.findDoc(docType, uniquePropertyName, propertyValue)
             .then((existingDoc) => {
                 if (existingDoc) {

@@ -1,9 +1,9 @@
 'use strict';
 
-var ConversationV1 = require('watson-developer-cloud/conversation/v1');
-var RecipeClient = require('./RecipeClient');
-var SlackBot = require('slackbots');
-var WebSocketBot = require('./WebSocketBot');
+const ConversationV1 = require('watson-developer-cloud/conversation/v1');
+const RecipeClient = require('./RecipeClient');
+const SlackBot = require('slackbots');
+const WebSocketBot = require('./WebSocketBot');
 
 class SousChef {
 
@@ -65,7 +65,7 @@ class SousChef {
         });
         this.webSocketBot.on('message', (client, msg) => {
             if (msg.type == 'msg') {
-                var data = {
+                let data = {
                     client: client,
                     user: client.id,
                     text: msg.text
@@ -89,9 +89,9 @@ class SousChef {
 
     processMessage(data) {
         // get or create state for the user
-        var message = data.text;
-        var messageSender = data.user;
-        var state = this.userStateMap[messageSender];
+        let message = data.text;
+        let messageSender = data.user;
+        let state = this.userStateMap[messageSender];
         if (!state) {
             state = {
                 userId: messageSender
@@ -99,7 +99,7 @@ class SousChef {
             this.userStateMap[messageSender] = state;
         }
         // make call to conversation service
-        var request = {
+        let request = {
             input: {text: data.text},
             context: state.conversationContext,
             workspace_id: this.conversationWorkspaceId,
@@ -117,7 +117,7 @@ class SousChef {
                     return this.handleCuisineMessage(state, response.entities[0].value);
                 }
                 else if (state.conversationContext['is_selection']) {
-                    var selection = -1;
+                    let selection = -1;
                     if (state.conversationContext['selection']) {
                         selection = parseInt(state.conversationContext['selection']);
                     }
@@ -149,8 +149,8 @@ class SousChef {
     }
 
     handleStartMessage(state, response) {
-        var reply = '';
-        for (var i = 0; i < response.output['text'].length; i++) {
+        let reply = '';
+        for (let i = 0; i < response.output['text'].length; i++) {
             reply += response.output['text'][i] + '\n';
         }
         if (state.user) {
@@ -172,8 +172,8 @@ class SousChef {
                 state.conversationContext['recipes'] = recipes;
                 state.ingredientCuisine = null;
                 // return the response
-                var response = 'Let\'s see here...\nI\'ve found these recipes: \n';
-                for (var i = 0; i < recipes.length; i++) {
+                let response = 'Let\'s see here...\nI\'ve found these recipes: \n';
+                for (let i = 0; i < recipes.length; i++) {
                     response += `${(i + 1)}.${recipes[i].title}\n`;
                 }
                 response += '\nPlease enter the corresponding number of your choice.';
@@ -184,7 +184,7 @@ class SousChef {
     handleIngredientsMessage(state, message) {
         // we want to get a list of recipes based on the ingredients (message)
         // first we see if we already have the ingredients in our datastore
-        var ingredientsStr = message;
+        let ingredientsStr = message;
         return this.recipeStore.findIngredient(ingredientsStr)
             .then((ingredient) => {
                 if (ingredient) {
@@ -206,13 +206,13 @@ class SousChef {
                 }
             })
             .then((ingredient) => {
-                var matchingRecipes = ingredient.recipes;
+                let matchingRecipes = ingredient.recipes;
                 // update state
                 state.conversationContext['recipes'] = matchingRecipes;
                 state.ingredientCuisine = ingredient;
                 // return the response
-                var response = 'Let\'s see here...\nI\'ve found these recipes: \n';
-                for (var i = 0; i < matchingRecipes.length; i++) {
+                let response = 'Let\'s see here...\nI\'ve found these recipes: \n';
+                for (let i = 0; i < matchingRecipes.length; i++) {
                     response += `${(i + 1)}.${matchingRecipes[i].title}\n`;
                 }
                 response += '\nPlease enter the corresponding number of your choice.';
@@ -223,7 +223,7 @@ class SousChef {
     handleCuisineMessage(state, message) {
         // we want to get a list of recipes based on the cuisine (message)
         // first we see if we already have the cuisines in our datastore
-        var cuisineStr = message;
+        let cuisineStr = message;
         return this.recipeStore.findCuisine(cuisineStr)
             .then((cuisine) => {
                 if (cuisine) {
@@ -245,13 +245,13 @@ class SousChef {
                 }
             })
             .then((cuisine) => {
-                var matchingRecipes = cuisine.recipes;
+                let matchingRecipes = cuisine.recipes;
                 // update state
                 state.conversationContext['recipes'] = matchingRecipes;
                 state.ingredientCuisine = cuisine;
                 // return the response
-                var response = 'Let\'s see here...\nI\'ve found these recipes: \n';
-                for (var i = 0; i < matchingRecipes.length; i++) {
+                let response = 'Let\'s see here...\nI\'ve found these recipes: \n';
+                for (let i = 0; i < matchingRecipes.length; i++) {
                     response += `${(i + 1)}.${matchingRecipes[i].title}\n`;
                 }
                 response += '\nPlease enter the corresponding number of your choice.';
@@ -263,8 +263,8 @@ class SousChef {
         if (selection >= 1 && selection <= 5) {
             // we want to get a the recipe based on the selection
             // first we see if we already have the recipe in our datastore
-            var recipes = state.conversationContext['recipes'];
-            var recipeId = `${recipes[selection - 1]["id"]}`;
+            let recipes = state.conversationContext['recipes'];
+            let recipeId = `${recipes[selection - 1]["id"]}`;
             return this.recipeStore.findRecipe(recipeId)
                 .then((recipe) => {
                     if (recipe) {
@@ -277,8 +277,8 @@ class SousChef {
                     }
                     else {
                         console.log(`Recipe does not exist for ${recipeId}. Querying Spoonacular for details.`);
-                        var recipeInfo;
-                        var recipeSteps;
+                        let recipeInfo;
+                        let recipeSteps;
                         return this.recipeClient.getInfoById(recipeId)
                             .then((response) => {
                                 recipeInfo = response;
@@ -286,7 +286,7 @@ class SousChef {
                             })
                             .then((response) => {
                                 recipeSteps = response;
-                                var recipeDetail = this.makeFormattedSteps(recipeInfo, recipeSteps);
+                                let recipeDetail = this.makeFormattedSteps(recipeInfo, recipeSteps);
                                 // add recipe to datastore
                                 return this.recipeStore.addRecipe(recipeId, recipeInfo['title'], recipeDetail, state.ingredientCuisine, state.user);
                             })
@@ -295,7 +295,7 @@ class SousChef {
                 .then((recipe) => {
                     state.ingredientCuisine = null;
                     state.conversationContext = null;
-                    var recipeDetail = recipe.instructions;
+                    let recipeDetail = recipe.instructions;
                     return Promise.resolve(recipeDetail);
                 });
         }
@@ -306,14 +306,14 @@ class SousChef {
     }
 
     makeFormattedSteps(recipeInfo, recipeSteps) {
-        var response = 'Ok, it takes *';
+        let response = 'Ok, it takes *';
         response += `${recipeInfo['readyInMinutes']}* minutes to make *`;
         response += `${recipeInfo['servings']}* servings of *`;
         response += `${recipeInfo['title']}*. Here are the steps:\n\n`;
         if (recipeSteps != null && recipeSteps.length > 0) {
-            for (var i = 0; i < recipeSteps.length; i++) {
-                var equipStr = '';
-                for (var e of recipeSteps[i]['equipment']) {
+            for (let i = 0; i < recipeSteps.length; i++) {
+                let equipStr = '';
+                for (let e of recipeSteps[i]['equipment']) {
                     equipStr += `${e['name']},`;
                 }
                 if (equipStr.length == 0) {

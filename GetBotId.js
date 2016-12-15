@@ -1,11 +1,11 @@
-var dotenv = require('dotenv');
-var SlackBot = require('slackbots');
+const dotenv = require('dotenv');
+const SlackBot = require('slackbots');
 
 // load from .env
 dotenv.config();
 
-var BOT_NAME = 'sous-chef';
-var slackBot = new SlackBot({
+const BOT_NAME = 'sous-chef';
+const slackBot = new SlackBot({
     token: process.env.SLACK_BOT_TOKEN,
     name: 'sous-chef'
 });
