@@ -1,25 +1,25 @@
-var cfenv = require('cfenv');
-var cloudant = require('cloudant');
-var dotenv = require('dotenv');
-var express = require('express');
-var CloudantRecipeStore = require('./CloudantRecipeStore');
-var SousChef = require('./SousChef');
+'use strict';
 
-var app = express();
-var http = require('http').Server(app);
+const cfenv = require('cfenv');
+const cloudant = require('cloudant');
+const dotenv = require('dotenv');
+const express = require('express');
+const CloudantRecipeStore = require('./CloudantRecipeStore');
+const SousChef = require('./SousChef');
 
-// get the app environment from Cloud Foundry
-var appEnv = cfenv.getAppEnv();
+const appEnv = cfenv.getAppEnv();
+const app = express();
+const http = require('http').Server(app);
 
 (function() {
     // load environment variables
     dotenv.config();
-    var cloudantClient = cloudant({
+    let cloudantClient = cloudant({
         url: process.env.CLOUDANT_URL,
         plugin:'promises'
     });
     // start the souschef bot
-    var sousChef = new SousChef(
+    let sousChef = new SousChef(
         new CloudantRecipeStore(cloudantClient, process.env.CLOUDANT_DB_NAME),
         process.env.SLACK_BOT_TOKEN,
         process.env.SPOONACULAR_KEY,
