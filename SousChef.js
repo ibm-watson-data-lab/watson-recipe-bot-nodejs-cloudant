@@ -63,13 +63,18 @@ class SousChef {
         this.webSocketBot.on('start', () => {
             console.log('sous-chef web socket is connected and running!')
         });
-        this.webSocketBot.on('message', (client, message) => {
-            var data = {
-                client: client,
-                user: client.id,
-                text: message
+        this.webSocketBot.on('message', (client, msg) => {
+            if (msg.type == 'msg') {
+                var data = {
+                    client: client,
+                    user: client.id,
+                    text: msg.text
+                }
+                this.processMessage(data);
             }
-            this.processMessage(data);
+            else if (msg.type == 'ping') {
+                this.webSocketBot.sendMessageToClient(client, {type: 'ping'});
+            }
         });
     }
 
@@ -78,7 +83,7 @@ class SousChef {
             this.slackBot.postMessage(data.channel, message, {});
         }
         else {
-            this.webSocketBot.sendMessageToClient(data.client, message);
+            this.webSocketBot.sendMessageToClient(data.client, {type: 'msg', text:message});
         }
     }
 

@@ -13,18 +13,8 @@ class WebSocketBot extends EventEmitter {
     }
 
     start(httpServer) {
-        // create http server and attach web socket server
-        // var server = http.createServer((request, response) => {
-        //     console.log(new Date() + ' WebSocket server received request for ' + request.url);
-        //     response.writeHead(404);
-        //     response.end();
-        // });
-        // server.listen(port, () => {
-        //     console.log(new Date() + ' WebSocket server is listening on port ' + port);
-        // });
         this.webSocketServer = new WebSocketServer({httpServer: httpServer, autoAcceptConnections: false});
         this.webSocketServer.on('request', (request) => {
-            // route connection to webSocketController
             this.onWebSocketConnection(request);
         });
     }
@@ -34,17 +24,19 @@ class WebSocketBot extends EventEmitter {
         var connection = request.accept(null, request.origin);
         var client = new WebSocketClient(connection);
         this.clients.push(client);
-        // call onMessageReceivedFromClient when a new message is received from the client
         connection.on('message', (message) => {
             if (message.type === 'utf8') {
                 console.log(new Date() + ' WebSocket server received message: ' + message.utf8Data);
-                this.onMessageReceivedFromClient(client, message.utf8Data);
+                var data = JSON.parse(message.utf8Data);
+                this.onMessageReceivedFromClient(client, data);
             }
         });
         connection.on('close', () => {
-            // remove the client from the array on close
-            this.clients.splice(this.clients.indexOf(client), 1);
-            console.log(new Date() + ' WebSocket client ' + connection.remoteAddress + ' disconnected.');
+            var index = this.clients.indexOf(client);
+            if (index >=0 ) {
+                this.clients.splice(index, 1);
+                console.log(new Date() + ' WebSocket client ' + connection.remoteAddress + ' disconnected.');
+            }
         });
     }
 
@@ -55,7 +47,6 @@ class WebSocketBot extends EventEmitter {
     sendMessageToClient(client, message) {
         client.send(message);
     }
-
 }
 
 module.exports = WebSocketBot;
