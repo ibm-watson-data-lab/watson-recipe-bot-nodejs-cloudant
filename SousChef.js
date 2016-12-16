@@ -24,7 +24,7 @@ class SousChef {
     run() {
         this.recipeStore.init()
             .then(() => {
-                if (this.slackBot) {
+                if (this.slackToken) {
                     this.runSlackBot();
                 }
                 else {
@@ -167,16 +167,12 @@ class SousChef {
 
     handleFavoritesMessage(state) {
         return this.recipeStore.findFavoriteRecipesForUser(state.user, 5)
-            .then(function (recipes) {
+            .then((recipes) => {
                 // update state
                 state.conversationContext['recipes'] = recipes;
                 state.ingredientCuisine = null;
-                // return the response
-                let response = 'Let\'s see here...\nI\'ve found these recipes: \n';
-                for (let i = 0; i < recipes.length; i++) {
-                    response += `${(i + 1)}.${recipes[i].title}\n`;
-                }
-                response += '\nPlease enter the corresponding number of your choice.';
+                // return response
+                const response = this.getRecipeListResponse(recipes);
                 return Promise.resolve(response);
             });
     }
@@ -210,12 +206,8 @@ class SousChef {
                 // update state
                 state.conversationContext['recipes'] = matchingRecipes;
                 state.ingredientCuisine = ingredient;
-                // return the response
-                let response = 'Let\'s see here...\nI\'ve found these recipes: \n';
-                for (let i = 0; i < matchingRecipes.length; i++) {
-                    response += `${(i + 1)}.${matchingRecipes[i].title}\n`;
-                }
-                response += '\nPlease enter the corresponding number of your choice.';
+                // return response
+                const response = this.getRecipeListResponse(matchingRecipes);
                 return Promise.resolve(response);
             });
     }
@@ -249,12 +241,8 @@ class SousChef {
                 // update state
                 state.conversationContext['recipes'] = matchingRecipes;
                 state.ingredientCuisine = cuisine;
-                // return the response
-                let response = 'Let\'s see here...\nI\'ve found these recipes: \n';
-                for (let i = 0; i < matchingRecipes.length; i++) {
-                    response += `${(i + 1)}.${matchingRecipes[i].title}\n`;
-                }
-                response += '\nPlease enter the corresponding number of your choice.';
+                // return response
+                const response = this.getRecipeListResponse(matchingRecipes);
                 return Promise.resolve(response);
             });
     }
@@ -286,26 +274,40 @@ class SousChef {
                             })
                             .then((response) => {
                                 recipeSteps = response;
-                                let recipeDetail = this.makeFormattedSteps(recipeInfo, recipeSteps);
+                                let recipeDetail = this.getRecipeInstructionsResponse(recipeInfo, recipeSteps);
                                 // add recipe to datastore
                                 return this.recipeStore.addRecipe(recipeId, recipeInfo['title'], recipeDetail, state.ingredientCuisine, state.user);
                             })
                     }
                 })
                 .then((recipe) => {
-                    state.ingredientCuisine = null;
-                    state.conversationContext = null;
+                    this.clearUserState(state);
                     let recipeDetail = recipe.instructions;
                     return Promise.resolve(recipeDetail);
                 });
         }
         else {
-            state.conversationContext['selection_valid'] = false;
-            return Promise.resolve('Invalid selection! Say anything to see your choices again...');
+            this.clearUserState(state);
+            return Promise.resolve('Invalid selection! Say anything to start over...');
         }
     }
 
-    makeFormattedSteps(recipeInfo, recipeSteps) {
+    clearUserState(state) {
+        state.ingredientCuisine = null;
+        state.conversationContext = null;
+        state.conversationStarted = false;
+    }
+
+    getRecipeListResponse(matchingRecipes) {
+        let response = 'Let\'s see here...\nI\'ve found these recipes: \n';
+        for (let i = 0; i < matchingRecipes.length; i++) {
+            response += `${(i + 1)}.${matchingRecipes[i].title}\n`;
+        }
+        response += '\nPlease enter the corresponding number of your choice.';
+        return response;
+    }
+
+    getRecipeInstructionsResponse(recipeInfo, recipeSteps) {
         let response = 'Ok, it takes *';
         response += `${recipeInfo['readyInMinutes']}* minutes to make *`;
         response += `${recipeInfo['servings']}* servings of *`;
