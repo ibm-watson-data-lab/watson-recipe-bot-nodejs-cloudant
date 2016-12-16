@@ -117,10 +117,6 @@ class SousChef {
                     return this.handleCuisineMessage(state, response.entities[0].value);
                 }
                 else if (state.conversationContext['is_selection']) {
-                    let selection = -1;
-                    if (state.conversationContext['selection']) {
-                        selection = parseInt(state.conversationContext['selection']);
-                    }
                     return this.handleSelectionMessage(state, selection);
                 }
                 else {
@@ -251,6 +247,10 @@ class SousChef {
     }
 
     handleSelectionMessage(state, selection) {
+        let selection = -1;
+        if (state.conversationContext['selection']) {
+            selection = parseInt(state.conversationContext['selection']);
+        }
         if (selection >= 1 && selection <= 5) {
             // we want to get a the recipe based on the selection
             // first we see if we already have the recipe in our datastore
