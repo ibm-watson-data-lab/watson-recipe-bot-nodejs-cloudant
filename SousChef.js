@@ -130,8 +130,11 @@ class SousChef {
             .then((reply) => {
                 this.sendMessageToClient(data, reply);
             })
-            .catch((error) => {
-                console.log(`Error: ${error}`);
+            .catch((err) => {
+                console.log(`Error: ${err}`);
+                this.clearUserState(state)
+                const reply = "Sorry, something went wrong! Say anything to me to start over...";
+                this.sendMessageToClient(data, reply);
             });
     }
 
@@ -270,14 +273,14 @@ class SousChef {
                         return this.recipeClient.getInfoById(recipeId)
                             .then((response) => {
                                 recipeInfo = response;
-                                return this.recipeClient.getStepsById(recipeId)
+                                return this.recipeClient.getStepsById(recipeId);
                             })
                             .then((response) => {
                                 recipeSteps = response;
                                 let recipeDetail = this.getRecipeInstructionsResponse(recipeInfo, recipeSteps);
                                 // add recipe to datastore
                                 return this.recipeStore.addRecipe(recipeId, recipeInfo['title'], recipeDetail, state.ingredientCuisine, state.user);
-                            })
+                            });
                     }
                 })
                 .then((recipe) => {
