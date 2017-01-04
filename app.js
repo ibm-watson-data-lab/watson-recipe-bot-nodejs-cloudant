@@ -39,7 +39,12 @@ app.set('view engine', 'ejs');
 
 // map requests
 app.get('/', function(req, res) {
-    res.render('index.ejs', {webSocketHost: appEnv.bind, webSocketPort: appEnv.port});
+    res.render('index.ejs', {
+        cloudantUrl: process.env.CLOUDANT_URL,
+        cloudantDbName: process.env.CLOUDANT_DB_NAME,
+        webSocketHost: appEnv.bind,
+        webSocketPort: appEnv.port
+    });
 });
 
 // start server on the specified port and binding host

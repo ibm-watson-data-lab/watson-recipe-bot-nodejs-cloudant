@@ -15,7 +15,7 @@ class SousChef {
         this.conversationService = new ConversationV1({
             username: conversationUsername,
             password: conversationPassword,
-            version_date: '2016-07-01'
+            version_date: '2016-07-11'
         });
         this.conversationWorkspaceId = conversationWorkspaceId;
         this.httpServer = httpServer;
@@ -27,7 +27,7 @@ class SousChef {
                 if (this.slackToken) {
                     this.runSlackBot();
                 }
-                else {
+                if (this.httpServer) {
                     this.runWebSocketBot();
                 }
             })
@@ -79,7 +79,7 @@ class SousChef {
     }
 
     sendMessageToClient(data, message) {
-        if (this.slackBot) {
+        if (data.channel) {
             this.slackBot.postMessage(data.channel, message, {});
         }
         else {
@@ -117,7 +117,7 @@ class SousChef {
                     return this.handleCuisineMessage(state, response.entities[0].value);
                 }
                 else if (state.conversationContext['is_selection']) {
-                    return this.handleSelectionMessage(state, selection);
+                    return this.handleSelectionMessage(state);
                 }
                 else {
                     return this.handleStartMessage(state, response);
@@ -246,7 +246,7 @@ class SousChef {
             });
     }
 
-    handleSelectionMessage(state, selection) {
+    handleSelectionMessage(state) {
         let selection = -1;
         if (state.conversationContext['selection']) {
             selection = parseInt(state.conversationContext['selection']);

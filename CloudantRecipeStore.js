@@ -99,6 +99,26 @@ class CloudantRecipeStore {
                     return this.db.insert(designDoc);
                 }
             })
+            .then(() => {
+                // see if the by_day_of_week design doc exists, if not then create it
+                return this.db.find({selector: {'_id': '_design/filter_by_type'}});
+            })
+            .then((result) => {
+                if (result && result.docs && result.docs.length > 0) {
+                    return Promise.resolve();
+                }
+                else {
+                    let designDoc = {
+                        _id: '_design/filter_by_type',
+                        filters: {
+                            ingredient: 'function (doc, req) { return doc.type && doc.type == "ingredient"; }',
+                            cuisine: 'function (doc, req) { return doc.type && doc.type == "cuisine"; }',
+                            recipe: 'function (doc, req) { return doc.type && doc.type == "recipe"; }',
+                        }
+                    };
+                    return this.db.insert(designDoc);
+                }
+            })
             .catch((err) => {
                 console.log(`Cloudant error: ${JSON.stringify(err)}`);
             });

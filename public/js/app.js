@@ -1,6 +1,8 @@
+var remoteDbUrl = cloudantUrl + '/' + cloudantDbName;
 var app = new Vue({
     el: '#app',
     data: {
+        db: null,
         webSocketHost: webSocketHost,
         webSocketPort: webSocketPort,
         webSocket: null,
@@ -12,14 +14,16 @@ var app = new Vue({
     methods: {
         submitMessage: function() {
             if (! app.webSocketConnected) {
-                app.messages.push({
-                    user: 'sous-chef',
-                    ts: new Date(),
-                    msg: 'You are not connected!'
+                app.db.allDocs({include_docs: true, descending: true}, function(err, doc) {
+                    app.messages.unshift({
+                        user: 'sous-chef',
+                        ts: new Date(),
+                        msg: 'Sorry, you are not connected! I have ' + doc.rows.length + ' recipes I can show you. Would you like to see what they are?'
+                    });
                 });
             }
             else {
-                app.messages.push({
+                app.messages.unshift({
                     user: 'Me',
                     ts: new Date(),
                     msg: app.message
@@ -29,6 +33,12 @@ var app = new Vue({
             }
         },
         init() {
+            // register service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker
+                    .register('./service-worker.js')
+                    .then(function() { console.log('Service Worker Registered'); });
+            }
             setTimeout(app.onTimer, 1);
         },
         onTimer() {
@@ -52,7 +62,7 @@ var app = new Vue({
                     app.webSocketConnected = true;
                     var data = JSON.parse(evt.data);
                     if (data.type == 'msg') {
-                        app.messages.push({
+                        app.messages.unshift({
                             user: 'sous-chef',
                             ts: new Date(),
                             msg: data.text
@@ -75,4 +85,24 @@ var app = new Vue({
     }
 });
 
-app.init();
+(function() {
+    // Initialize vue app
+    app.init();
+    // Register service worked
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./service-worker.js')
+            .then(function() {
+                console.log('Service Worker registered, configuring pouchdb replication...');
+                var opts = {
+                    live: true,
+                    filter: 'filter_by_type/recipe',
+                };
+                app.db = new PouchDB('watson_recipe_bot');
+                app.db.replicate.from(remoteDbUrl, opts, function(err) {
+                    if (err) {
+                        console.log('Error configuring pouchdb replication: ' + err);
+                    }
+                });
+            });
+    }
+})();
