@@ -39,16 +39,20 @@ app.set('view engine', 'ejs');
 
 // map requests
 app.get('/', function(req, res) {
+    // res.render('index.ejs', {
+    //     cloudantUrl: process.env.CLOUDANT_URL,
+    //     cloudantDbName: process.env.CLOUDANT_DB_NAME
+    // });
     res.render('index.ejs', {
-        cloudantUrl: process.env.CLOUDANT_URL,
+        cloudantUrl: 'https://starestaiduchavespereame:1364a2904eb2445da52b3b11ade6456035cbf569@9f61849d-2884-4463-8888-56344789b05c-bluemix.cloudant.com',
         cloudantDbName: process.env.CLOUDANT_DB_NAME,
-        webSocketHost: appEnv.bind,
-        webSocketPort: appEnv.port
+        webSocketProtocol: appEnv.url.indexOf('http://') == 0 ? 'ws://' : 'wss://'
     });
+
 });
 
 // start server on the specified port and binding host
-http.listen(appEnv.port, '0.0.0.0', () => {
+http.listen(appEnv.port, appEnv.bind, () => {
     console.log("server starting on " + appEnv.url);
 });
 
