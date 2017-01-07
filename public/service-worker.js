@@ -1,4 +1,4 @@
-var cacheName = 'recipe-bot-cache.v0';
+var cacheName = 'recipe-bot-cache.v1';
 var filesToCache = [
     '/',
     '/css/master.css',
