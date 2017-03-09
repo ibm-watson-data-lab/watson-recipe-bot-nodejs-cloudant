@@ -22,7 +22,7 @@
     "cloudant": "^1.6.2",
     "dotenv": "^2.0.0",
     "cfenv": "1.0.x",
-    "express": "4.13.x",
+    "express": "4.15.2",
     "ibm-graph-client": "^0.3.6",
     "slackbots": "^0.5.3",
     "watson-developer-cloud": "^2.8.2"
